@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <title>Java Class Builder</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <h1>Java Class Builder</h1>
+      <div class="row">
+        <div class="col">
+          <form>
+            <div class="form-group">
+              <label for="classDefinition">Définitions de la classe (avec attributs)</label>
+              <textarea class="form-control" id="classDefinition" rows="8">
+class Foo{
+  int id;
+  String name;
+}
+              </textarea>
+            </div>
+          </form>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label for="classDefinitionResult">Résultat</label>
+            <textarea class="form-control" id="classDefinitionResult" rows="8"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <pre>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+    String.prototype.capitalize = function() {
+      return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+    $("#classDefinition").on("input", (e) => {
+      result = buildClass(e.target.value);
+      console.log(result);
+      $("#classDefinitionResult").val(result);
+    });
+    function buildClass(value){
+      let finalClass = "";
+      let lines = value.split("\n");
+      let className = lines[0].match(/[a-zA-Z]+/g)[1];
+      let attributs = [];
+
+      // On ajoute la définition de la classe
+      finalClass = "class " + className + "{\n";
+      for(i = 1; i < lines.length; i++){
+        let line = lines[i].match(/[a-zA-Z]+/g);
+        if(line != null){ // S'il y a bien des caractères sur la ligne, on le push dans le tableau
+          attributs.push(line);
+        }
+      }
+
+      // On remet les attributs dans la classe finale
+      for(i=0;i<attributs.length;i++){
+        finalClass += "\t" + attributs[i][0] + " " + attributs[i][1] + ";\n";
+      }
+
+      // On crée les paramètres du constructeur
+      finalClass += "\n\t//Constructeur de la classe "+className+":";
+      let params = "";
+      for(i=0;i<attributs.length;i++){
+        params += attributs[i][0] + " " + attributs[i][1];
+        if(i != attributs.length - 1){
+          params += ", ";
+        }
+      }
+      // On crée le constructeur
+      finalClass += "\n\t" + className+"("+params+"){\n";
+
+      // ex: this.foo = foo;
+      for(i=0;i<attributs.length;i++){
+        finalClass += "\t\tthis."+attributs[i][1]+" = "+attributs[i][1]+";\n";
+      }
+
+      finalClass += "\t}\n"; // Le constructeur est créé.
+      finalClass += "\n\t// Les accesseurs :\n";
+      // Ensuite, on génére les accesseurs en commençant par les get
+      for(i=0;i<attributs.length;i++){
+        finalClass += "\tpublic "+attributs[i][0]+" get"+attributs[i][1].capitalize()+"()\n\t{\n";
+        finalClass += "\t\t return this."+attributs[i][1]+";\n";
+        finalClass += "\t}\n";
+      }
+      // Puis, les set !
+      for(i=0;i<attributs.length;i++){
+        finalClass += "\tpublic void set"+attributs[i][1].capitalize()+"("+attributs[i][0]+" "+attributs[i][1]+")\n\t{\n";
+        finalClass += "\t\t this."+attributs[i][1]+" = "+attributs[i][1]+";\n";
+        finalClass += "\t}\n";
+      }
+      // Et enfin, la méthode formatAffichage() !
+      finalClass += "\n\t//Méthodes de classe :\n";
+      finalClass += "\tpublic String formatAffichage()\n\t{\n\t}";
+      finalClass += "\n}";
+      return finalClass;
+    }
+    </script>
+  </body>
+</html>
