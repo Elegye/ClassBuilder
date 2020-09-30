@@ -8,6 +8,12 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <title>Java Class Builder</title>
+    <link rel="stylesheet" href="codemirror.css">
+    <link rel="stylesheet" href="material.css">
+    <script src="codemirror.js"></script>
+    <script src="matchbrackets.js"></script>
+    <script src="clike.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
   </head>
   <body>
     <div class="container-fluid">
@@ -28,25 +34,50 @@ class Foo{
         <div class="col">
           <div class="form-group">
             <label for="classDefinitionResult">Résultat</label>
-            <textarea class="form-control" id="classDefinitionResult" rows="8"></textarea>
+            <textarea class="form-control" id="classDefinitionResult" class="language-java"></textarea>
           </div>
+          <button id="copyClipboard" type="button" class="btn btn-primary">Copier</button>
         </div>
       </div>
+
     </div>
-    <pre>
+    <!-- Footer -->
+    <footer class="page-footer font-small blue pt-4 bg-light">
+      <!-- Copyright -->
+      <div class="footer-copyright text-center py-3">© 2020 Copyright:
+        Alexandre Halopé
+      </div>
+      <!-- Copyright -->
+    </footer>
+    <!-- Footer -->
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
     <script type="text/javascript">
+    new ClipboardJS('.btn');
     String.prototype.capitalize = function() {
       return this.charAt(0).toUpperCase() + this.slice(1);
     }
-    $("#classDefinition").on("input", (e) => {
-      result = buildClass(e.target.value);
+    var editorResult = CodeMirror.fromTextArea(document.getElementById('classDefinitionResult'), {
+      lineNumbers: true,
+      mode: 'text/x-java',
+      theme: 'material',
+      matchBrackets: true
+    });
+    var editor = CodeMirror.fromTextArea(document.getElementById('classDefinition'), {
+      lineNumbers: true,
+      mode: 'text/x-java',
+      theme: 'material',
+      matchBrackets: true
+    });
+    editor.on("change", () => {
+      result = buildClass(editor.getValue());
       console.log(result);
-      $("#classDefinitionResult").val(result);
+      editorResult.getDoc().setValue(result);
+      $("#copyClipboard").attr("data-clipboard-text", result);
     });
     function buildClass(value){
       let finalClass = "";
